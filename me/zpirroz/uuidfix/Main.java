@@ -31,11 +31,9 @@ public class Main extends JavaPlugin
     	Bukkit.getConsoleSender().sendMessage("§8This plugin is intended for §cOFFLINE §8UUIDs, but you can use it on your online-mode server!");
     	Bukkit.getConsoleSender().sendMessage("§9You can change it on Config!");
     	
-    	this.getConfig().options().header("Enable this to broadcast the player's UUID at every login!");
     	this.getConfig().addDefault("debug", false);
     	config.options().copyDefaults(true);
     	this.saveConfig();
-    	this.getConfig().options().header("Set the mode according with your server. (Example: online-mode=false is mode=offline");
     	this.getConfig().addDefault("online-mode", false);
         config.options().copyDefaults(true);
         this.saveConfig();
