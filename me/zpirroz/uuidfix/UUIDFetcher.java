@@ -22,7 +22,7 @@ public class UUIDFetcher
 	{
 		try
 		{
-			URL url = new URL("http://tools.glowingmines.eu/convertor/nick/" + username);
+			URL url = new URL("https://api.mojang.com/users/profiles/minecraft/" + username);
 			InputStream stream = url.openStream();
 			InputStreamReader inr = new InputStreamReader(stream);
 			BufferedReader reader = new BufferedReader(inr);
@@ -37,7 +37,7 @@ public class UUIDFetcher
 			JsonElement element = new JsonParser().parse(result);
 			JsonObject obj = element.getAsJsonObject();
 
-			String uuid = obj.get("offlinesplitteduuid").toString();
+			String uuid = obj.get("id").toString();
 
 			uuid = uuid.substring(1);
 			uuid = uuid.substring(0, uuid.length() - 1);
