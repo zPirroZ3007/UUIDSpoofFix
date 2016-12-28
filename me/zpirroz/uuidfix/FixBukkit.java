@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.UUID;
 
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -28,6 +29,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.google.common.base.Charsets;
 import com.mysql.jdbc.Connection;
 import com.mysql.jdbc.Statement;
 
@@ -46,6 +48,7 @@ public class FixBukkit extends JavaPlugin implements Listener
 
 		this.getConfig().addDefault("debug", false);
 		this.getConfig().addDefault("join-msg", true);
+		this.getConfig().addDefault("online-mode", false);
 		this.getConfig().addDefault("mysql.enabled", false);
 		this.getConfig().addDefault("mysql.address", "localhost");
 		this.getConfig().addDefault("mysql.port", "3306");
@@ -83,7 +86,7 @@ public class FixBukkit extends JavaPlugin implements Listener
 				Bukkit.getPluginManager().disablePlugin(plugin);
 			}
 		}
-		
+
 		Bukkit.getConsoleSender().sendMessage("§8[§7UUIDSpoof - Fix§8] §aHas been enabled!");
 	}
 
@@ -196,50 +199,102 @@ public class FixBukkit extends JavaPlugin implements Listener
 	public void onPlayerJoin(PlayerJoinEvent event)
 	{
 		Player player = (Player) event.getPlayer();
-		String uuid = player.getUniqueId().toString();
-
-		if (UUIDFetcher.get(player.getName().toString()).contains(uuid))
+		
+		if (config.getBoolean("online-mode") == false)
 		{
-			if (config.getBoolean("debug") == true)
+			String uuid = player.getUniqueId().toString();
+			UUID uuidFetch = UUID.nameUUIDFromBytes(("OfflinePlayer:" + player.getName()).getBytes(Charsets.UTF_8));
+			if (uuidFetch.toString().contains(uuid))
 			{
-				Bukkit.getServer().broadcastMessage("§6" + player.getName().toString() + "§e's UUID is §6" + uuid);
-			}
-
-			if (config.getBoolean("join-msg") == true)
-			{
-				TextComponent a = new TextComponent("§7UUIDSpoof - Fix");
-				a.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("§6Click here to go to\n§6the §7SpigotMC§6 Page of the plugin.").create()));
-				a.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://www.spigotmc.org/resources/uuidspoof-fix.26948/"));
-				TextComponent b = new TextComponent(" §fby ");
-				TextComponent c = new TextComponent("§b§ozPirroZ3007");
-				c.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://www.spigotmc.org/members/zpirroz3007.44244/"));
-				player.spigot().sendMessage(new BaseComponent[] { a, b, c });
-				player.sendMessage("§fWith this plugin you can fix the UUID-Spoof exploit!");
-			}
-		}
-		else
-		{
-			if (config.getBoolean("debug") == true)
-			{
-				Bukkit.getServer().broadcastMessage("§4" + player.getName().toString() + " §ctried to spoof his UUID!");
-			}
-
-			player.kickPlayer("§cError!\n§7§nSeems that your UUID is Spoofed! Maybe this is an error, please try to restart your client or change version!");
-
-			if (config.getBoolean("mysql.enabled") == true)
-			{
-				String sql = "INSERT INTO `uuidlog`(`name`, `uuid`, `date`) VALUES ('" + player.getName().toString() + "','" + uuid + "','" + new SimpleDateFormat("dd/MM/yy HH:mm:ss").format(new Date()) + "')";
-				try
+				if (config.getBoolean("debug") == true)
 				{
-					this.s.executeUpdate(sql);
+					Bukkit.getServer().broadcastMessage("§6" + player.getName().toString() + "§e's UUID is §6" + uuid);
 				}
-				catch (SQLException e)
+
+				if (config.getBoolean("join-msg") == true)
 				{
-					e.printStackTrace();
+					TextComponent a = new TextComponent("§7UUIDSpoof - Fix");
+					a.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("§6Click here to go to\n§6the §7SpigotMC§6 Page of the plugin.").create()));
+					a.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://www.spigotmc.org/resources/uuidspoof-fix.26948/"));
+					TextComponent b = new TextComponent(" §fby ");
+					TextComponent c = new TextComponent("§b§ozPirroZ3007");
+					c.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://www.spigotmc.org/members/zpirroz3007.44244/"));
+					player.spigot().sendMessage(new BaseComponent[] { a, b, c });
+					player.sendMessage("§fWith this plugin you can fix the UUID-Spoof exploit!");
 				}
 			}
 			else
 			{
+				if (config.getBoolean("debug") == true)
+				{
+					Bukkit.getServer().broadcastMessage("§4" + player.getName().toString() + " §ctried to spoof his UUID!");
+				}
+
+				player.kickPlayer("§cError!\n§7§nSeems that your UUID is Spoofed! Maybe this is an error, please try to restart your client or change version!");
+
+				if (config.getBoolean("mysql.enabled") == true)
+				{
+					String sql = "INSERT INTO `uuidlog`(`name`, `uuid`, `date`) VALUES ('" + player.getName().toString() + "','" + uuid + "','" + new SimpleDateFormat("dd/MM/yy HH:mm:ss").format(new Date()) + "')";
+					try
+					{
+						this.s.executeUpdate(sql);
+					}
+					catch (SQLException e)
+					{
+						e.printStackTrace();
+					}
+				}
+				else
+				{
+				}
+			}
+		}
+		else
+		{
+			String uuid = player.getUniqueId().toString().replaceAll("-", "");
+			if (UUIDFetcher.get(player.getName()).contains(uuid))
+			{
+				if (config.getBoolean("debug") == true)
+				{
+					Bukkit.getServer().broadcastMessage("§6" + player.getName().toString() + "§e's UUID is §6" + uuid);
+				}
+
+				if (config.getBoolean("join-msg") == true)
+				{
+					TextComponent a = new TextComponent("§7UUIDSpoof - Fix");
+					a.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("§6Click here to go to\n§6the §7SpigotMC§6 Page of the plugin.").create()));
+					a.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://www.spigotmc.org/resources/uuidspoof-fix.26948/"));
+					TextComponent b = new TextComponent(" §fby ");
+					TextComponent c = new TextComponent("§b§ozPirroZ3007");
+					c.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://www.spigotmc.org/members/zpirroz3007.44244/"));
+					player.spigot().sendMessage(new BaseComponent[] { a, b, c });
+					player.sendMessage("§fWith this plugin you can fix the UUID-Spoof exploit!");
+				}
+			}
+			else
+			{
+				if (config.getBoolean("debug") == true)
+				{
+					Bukkit.getServer().broadcastMessage("§4" + player.getName().toString() + " §ctried to spoof his UUID!");
+				}
+
+				player.kickPlayer("§cError!\n§7§nSeems that your UUID is Spoofed! Maybe this is an error, please try to restart your client or change version!");
+
+				if (config.getBoolean("mysql.enabled") == true)
+				{
+					String sql = "INSERT INTO `uuidlog`(`name`, `uuid`, `date`) VALUES ('" + player.getName().toString() + "','" + player.getUniqueId().toString() + "','" + new SimpleDateFormat("dd/MM/yy HH:mm:ss").format(new Date()) + "')";
+					try
+					{
+						this.s.executeUpdate(sql);
+					}
+					catch (SQLException e)
+					{
+						e.printStackTrace();
+					}
+				}
+				else
+				{
+				}
 			}
 		}
 	}
