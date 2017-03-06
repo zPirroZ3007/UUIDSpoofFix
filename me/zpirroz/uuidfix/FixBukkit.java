@@ -25,7 +25,8 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerLoginEvent;
+import org.bukkit.event.player.PlayerLoginEvent.Result;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -75,7 +76,7 @@ public class FixBukkit extends JavaPlugin implements Listener
 
 				Bukkit.getConsoleSender().sendMessage("§aSuccessfully connected!");
 
-				this.s = ((Statement) conn.createStatement());
+				this.s = ((Statement) conn.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY));
 
 				String createTable = "CREATE TABLE IF NOT EXISTS `uuidlog` (`name` varchar(255) NOT NULL,`uuid` varchar(255) NOT NULL,`date` varchar(255) NOT NULL) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
 				this.s.executeUpdate(createTable);
@@ -109,54 +110,148 @@ public class FixBukkit extends JavaPlugin implements Listener
 				{
 					if (config.getBoolean("mysql.enabled") == true)
 					{
-						if (args.length == 2)
+						if (args.length == 2 || args.length == 3)
 						{
 							if (args[1].contains("-"))
 							{
-								String sql = "SELECT * FROM `uuidlog` WHERE uuid='" + args[1] + "';";
-								try
+								if (args.length == 2)
 								{
-									ResultSet rs = this.s.executeQuery(sql);
+									String sql = "SELECT * FROM `uuidlog` WHERE uuid='" + args[1] + "' ORDER BY `date` DESC LIMIT 0, 10;";
 
-									if (rs.next())
+									try
 									{
-										sender.sendMessage("§aResults of your search:" + "\n§eUsername: " + rs.getString("name") + "\n§eUUID: " + rs.getString("uuid") + "\nDate: " + rs.getString("date"));
+										ResultSet rs = this.s.executeQuery(sql);
+
+										if (rs.next())
+										{
+											sender.sendMessage("§aResults of your search:\n");
+											int size = 0;
+											rs.last();
+											size = rs.getRow();
+											rs.beforeFirst();
+
+											for (int x = 1; x < size + 1; x++)
+											{
+												rs.absolute(x);
+												sender.sendMessage("\n§eUsername: " + rs.getString("name") + "\n§eUUID: " + rs.getString("uuid") + "\nDate: " + rs.getString("date"));
+											}
+										}
+										else
+										{
+											sender.sendMessage("§cNo results have been found for your search!");
+										}
 									}
-									else
+									catch (Exception e)
 									{
-										sender.sendMessage("§cNo results have been found for your search!");
+										e.printStackTrace();
 									}
 								}
-								catch (Exception e)
+								else if (args.length == 3)
 								{
-									e.printStackTrace();
+									int page = Integer.valueOf(args[2])*10-10;
+									String sql = "SELECT * FROM `uuidlog` WHERE uuid='" + args[1] + "' ORDER BY `date` DESC LIMIT " + page + ", 10;";
+
+									try
+									{
+										ResultSet rs = this.s.executeQuery(sql);
+
+										if (rs.next())
+										{
+											sender.sendMessage("§aResults of your search:\n");
+											int size = 0;
+											rs.last();
+											size = rs.getRow();
+											rs.beforeFirst();
+
+											for (int x = 1; x < size + 1; x++)
+											{
+												rs.absolute(x);
+												sender.sendMessage("\n§eUsername: " + rs.getString("name") + "\n§eUUID: " + rs.getString("uuid") + "\nDate: " + rs.getString("date"));
+											}
+										}
+										else
+										{
+											sender.sendMessage("§cNo results have been found for your search!");
+										}
+									}
+									catch (Exception e)
+									{
+										e.printStackTrace();
+									}
 								}
 							}
 							else
 							{
-								String sql = "SELECT * FROM `uuidlog` WHERE name='" + args[1] + "';";
-								try
+								if (args.length == 2)
 								{
-									ResultSet rs = this.s.executeQuery(sql);
+									String sql = "SELECT * FROM `uuidlog` WHERE name='" + args[1] + "' ORDER BY `date` DESC LIMIT 0, 10;";
 
-									if (rs.next())
+									try
 									{
-										sender.sendMessage("§aResults of your search:" + "\n§eUsername: " + rs.getString("name") + "\n§eUUID: " + rs.getString("uuid") + "\nDate: " + rs.getString("date"));
+										ResultSet rs = this.s.executeQuery(sql);
+
+										if (rs.next())
+										{
+											sender.sendMessage("§aResults of your search:\n");
+											int size = 0;
+											rs.last();
+											size = rs.getRow();
+											rs.beforeFirst();
+
+											for (int x = 1; x < size + 1; x++)
+											{
+												rs.absolute(x);
+												sender.sendMessage("\n§eUsername: " + rs.getString("name") + "\n§eUUID: " + rs.getString("uuid") + "\nDate: " + rs.getString("date"));
+											}
+										}
+										else
+										{
+											sender.sendMessage("§cNo results have been found for your search!");
+										}
 									}
-									else
+									catch (Exception e)
 									{
-										sender.sendMessage("§cNo results have been found for your search!");
+										e.printStackTrace();
 									}
 								}
-								catch (Exception e)
+								else if (args.length == 3)
 								{
-									e.printStackTrace();
+									int page = Integer.valueOf(args[2])*10-10;
+									String sql = "SELECT * FROM `uuidlog` WHERE name='" + args[1] + "' ORDER BY `date` DESC LIMIT " + page + ", 10;";
+
+									try
+									{
+										ResultSet rs = this.s.executeQuery(sql);
+
+										if (rs.next())
+										{
+											sender.sendMessage("§aResults of your search:\n");
+											int size = 0;
+											rs.last();
+											size = rs.getRow();
+											rs.beforeFirst();
+
+											for (int x = 1; x < size + 1; x++)
+											{
+												rs.absolute(x);
+												sender.sendMessage("\n§eUsername: " + rs.getString("name") + "\n§eUUID: " + rs.getString("uuid") + "\nDate: " + rs.getString("date"));
+											}
+										}
+										else
+										{
+											sender.sendMessage("§cNo results have been found for your search!");
+										}
+									}
+									catch (Exception e)
+									{
+										e.printStackTrace();
+									}
 								}
 							}
 						}
 						else
 						{
-							sender.sendMessage("§cUsage: /uuidfix check [username/uuid]");
+							sender.sendMessage("§cUsage: /uuidfix check <username/uuid> [page]");
 						}
 					}
 					else
@@ -196,10 +291,10 @@ public class FixBukkit extends JavaPlugin implements Listener
 	}
 
 	@EventHandler
-	public void onPlayerJoin(PlayerJoinEvent event)
+	public void onPlayerJoin(PlayerLoginEvent event)
 	{
 		Player player = (Player) event.getPlayer();
-		
+
 		if (config.getBoolean("online-mode") == false)
 		{
 			String uuid = player.getUniqueId().toString();
@@ -230,7 +325,7 @@ public class FixBukkit extends JavaPlugin implements Listener
 					Bukkit.getServer().broadcastMessage("§4" + player.getName().toString() + " §ctried to spoof his UUID!");
 				}
 
-				player.kickPlayer("§cError!\n§7§nSeems that your UUID is Spoofed! Maybe this is an error, please try to restart your client or change version!");
+				event.disallow(Result.KICK_BANNED, "§cError!\n§7§nSeems that your UUID is Spoofed! Maybe this is an error, please try to restart your client or change version!");
 
 				if (config.getBoolean("mysql.enabled") == true)
 				{
@@ -278,7 +373,7 @@ public class FixBukkit extends JavaPlugin implements Listener
 					Bukkit.getServer().broadcastMessage("§4" + player.getName().toString() + " §ctried to spoof his UUID!");
 				}
 
-				player.kickPlayer("§cError!\n§7§nSeems that your UUID is Spoofed! Maybe this is an error, please try to restart your client or change version!");
+				event.disallow(Result.KICK_BANNED, "§cError!\n§7§nSeems that your UUID is Spoofed! Maybe this is an error, please try to restart your client or change version!");
 
 				if (config.getBoolean("mysql.enabled") == true)
 				{
