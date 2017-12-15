@@ -41,17 +41,11 @@ public class Fix extends JavaPlugin implements Listener, PluginMessageListener
 	// Declare configuration file
 	FileConfiguration config = getConfig();
 
-	// Declare messages file path
-	File messages = new File(getDataFolder(), "language.yml");
+	// Declare messages file instance
+	File messages;
 
-	// Load messages configuration
-	YamlConfiguration messagesFile = YamlConfiguration.loadConfiguration(messages);
-
-	// Declare exempt file path
-	File exempt = new File(getDataFolder(), "exempt.yml");
-
-	// Load exempt configuration
-	YamlConfiguration exemptFile = YamlConfiguration.loadConfiguration(exempt);
+	// Declare exempt file instance
+	File exempt;
 
 	// Integer that gets the BungeeCord's mode
 	static int isOnline = 2;
@@ -69,7 +63,7 @@ public class Fix extends JavaPlugin implements Listener, PluginMessageListener
 		this.saveConfig();
 
 		// Declare messages file path
-		File messages = new File(getDataFolder(), "language.yml");
+		messages = new File(getDataFolder(), "language.yml");
 
 		// Check if messages file already exists
 		if (!messages.exists())
@@ -86,7 +80,7 @@ public class Fix extends JavaPlugin implements Listener, PluginMessageListener
 		}
 
 		// Declare exempt file path
-		File exempt = new File(getDataFolder(), "exempt.yml");
+		exempt = new File(getDataFolder(), "exempt.yml");
 
 		// Check if exempt file already exists
 		if (!exempt.exists())
@@ -174,7 +168,7 @@ public class Fix extends JavaPlugin implements Listener, PluginMessageListener
 		Player player = event.getPlayer();
 
 		// Check if the player is in exempt list
-		if (!exemptFile.getStringList("whitelist").contains(player.getName()))
+		if (!exempt().getStringList("whitelist").contains(player.getName()))
 		{
 			// This string returns UUID of the Player
 			String uuid = player.getUniqueId().toString();
@@ -186,7 +180,7 @@ public class Fix extends JavaPlugin implements Listener, PluginMessageListener
 			if (!fetcher.fetchUUID(player.getName(), onlineMode()).equals(uuid))
 			{
 				// Kick player for spoofed UUID
-				event.disallow(PlayerLoginEvent.Result.KICK_BANNED, messagesFile.getString("kick-message").replaceAll("&", "§"));
+				event.disallow(PlayerLoginEvent.Result.KICK_BANNED, messages().getString("kick-message").replaceAll("&", "§"));
 
 				// Check if the the debug is enabled in config
 				if (debug())
@@ -195,13 +189,13 @@ public class Fix extends JavaPlugin implements Listener, PluginMessageListener
 					TextComponent name = new TextComponent(player.getName());
 
 					// Set the hover of the declared TextComponent with IP Address, Spoofed UUID etc.
-					name.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(messagesFile.getString("ip-address").replaceAll("&", "§") + event.getRealAddress().getHostName() + "\n" + messagesFile.getString("spoofed-uuid").replaceAll("&", "§") + uuid + "\n" + messagesFile.getString("real-uuid").replaceAll("&", "§") + fetcher.fetchUUID(player.getName(), onlineMode()) + "\n" + messagesFile.getString("date").replaceAll("&", "§") + currentDate()).create()));
+					name.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(messages().getString("ip-address").replaceAll("&", "§") + event.getRealAddress().getHostName() + "\n" + messages().getString("spoofed-uuid").replaceAll("&", "§") + uuid + "\n" + messages().getString("real-uuid").replaceAll("&", "§") + fetcher.fetchUUID(player.getName(), onlineMode()) + "\n" + messages().getString("date").replaceAll("&", "§") + currentDate()).create()));
 
 					// Check if the "debug-message" string contains name variable
-					if (messagesFile.getString("debug-message").contains("%name%"))
+					if (messages().getString("debug-message").contains("%name%"))
 					{
 						// Split the string on the name variable
-						String[] nameSplit = messagesFile.getString("debug-message").split("%name%");
+						String[] nameSplit = messages().getString("debug-message").split("%name%");
 
 						// Broadcast a message to the server.
 						Bukkit.getServer().spigot().broadcast(new BaseComponent[] { new TextComponent(nameSplit[0].replaceAll("&", "§")), name, new TextComponent(nameSplit[1].replaceAll("&", "§")) });
@@ -209,7 +203,7 @@ public class Fix extends JavaPlugin implements Listener, PluginMessageListener
 					else
 					{
 						// Broadcast a message to the server.
-						Bukkit.getServer().spigot().broadcast(new BaseComponent[] { new TextComponent(messagesFile.getString("debug-message").replaceAll("&", "§")) });
+						Bukkit.getServer().spigot().broadcast(new BaseComponent[] { new TextComponent(messages().getString("debug-message").replaceAll("&", "§")) });
 					}
 				}
 			}
@@ -226,7 +220,7 @@ public class Fix extends JavaPlugin implements Listener, PluginMessageListener
 		if (joinMsg())
 		{
 			// Text Components etc.
-			String successString = messagesFile.getString("uuidcheck-success").replaceAll("&", "§");
+			String successString = messages().getString("uuidcheck-success").replaceAll("&", "§");
 			TextComponent success = new TextComponent("\n\n" + successString.replaceAll("%uuid%", player.getUniqueId().toString()));
 			TextComponent a = new TextComponent("§7UUIDSpoof - Fix");
 			a.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("§6Click here to go to\n§6the §7SpigotMC§6 Page of the plugin.").create()));
@@ -291,5 +285,17 @@ public class Fix extends JavaPlugin implements Listener, PluginMessageListener
 		Date date = new Date();
 
 		return dateFormat.format(date);
+	}
+
+	// Return the exempt YAML file
+	private YamlConfiguration exempt()
+	{
+		return YamlConfiguration.loadConfiguration(exempt);
+	}
+
+	// Return the messages YAML file
+	private YamlConfiguration messages()
+	{
+		return YamlConfiguration.loadConfiguration(messages);
 	}
 }
