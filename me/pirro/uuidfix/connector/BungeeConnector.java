@@ -10,7 +10,6 @@
 package me.pirro.uuidfix.connector;
 
 import net.md_5.bungee.api.config.ServerInfo;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
 
@@ -42,22 +41,22 @@ public class BungeeConnector extends Plugin implements Listener
 		{
 			@Override public void run()
 			{
-				// Create a cycle for every online player
-				for(ProxiedPlayer player : getProxy().getPlayers())
+				// Create a cycle for every server
+				for(ServerInfo servers : getProxy().getServers().values())
 				{
 					// Send the mode to bukkit
-					sendToBukkit("UUIDSpoofFix", "" + getProxy().getConfig().isOnlineMode(), player.getServer().getInfo());
+					sendToBukkit("UUIDSpoofFix", "" + getProxy().getConfig().isOnlineMode(), servers);
 				}
 			}
 		}, 1, 1, TimeUnit.SECONDS);
 
-		getLogger().info("§aConnector Enabled!");
+		getLogger().info("Â§aConnector Enabled!");
 	}
 
 	// What the plugin does when it gets disabled
 	public void onDisable()
 	{
-		getLogger().info("§cConnector Disabled!");
+		getLogger().info("Â§cConnector Disabled!");
 	}
 
 	// This method will send a message to the specified server

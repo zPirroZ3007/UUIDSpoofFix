@@ -59,6 +59,7 @@ public class Fix extends JavaPlugin implements Listener, PluginMessageListener
 		// Save config defaults
 		this.getConfig().addDefault("debug", false);
 		this.getConfig().addDefault("join-msg", true);
+		this.getConfig().addDefault("fast-login", false);
 		config.options().copyDefaults(true);
 		this.saveConfig();
 
@@ -105,8 +106,21 @@ public class Fix extends JavaPlugin implements Listener, PluginMessageListener
 		// Register listener
 		Bukkit.getServer().getPluginManager().registerEvents(this, this);
 
+		// Metrics
+		try
+		{
+			Metrics metrics = new Metrics(this);
+			metrics.start();
+		}
+		catch (IOException e)
+		{
+			// Failed to submit the stats :(
+			Bukkit.getConsoleSender().sendMessage("Â§cCould not enable Metrics!");
+			e.printStackTrace();
+		}
+
 		// Enable message
-		Bukkit.getConsoleSender().sendMessage("\n" + "§9*----------------------------------------------------------------*" + "\n§bChecking online mode..." + "\n§7The online-mode is: §f" + onlineMode() + "§7!" + "\n\n§a§oUUIDSpoof - Fix §7by §ozPirroZ3007§r§7 has been enabled!" + "\n§7The §bUUID exploit§r§7 is now §bfixed§r§7!" + "\n§9*----------------------------------------------------------------*");
+		Bukkit.getConsoleSender().sendMessage("\n" + "Â§9*----------------------------------------------------------------*" + "\nÂ§bChecking online mode..." + "\nÂ§7The online-mode is: Â§f" + onlineMode() + "Â§7!" + "\n\nÂ§aÂ§oUUIDSpoof - Fix Â§7by Â§ozPirroZ3007Â§rÂ§7 has been enabled!" + "\nÂ§7The Â§bUUID exploitÂ§rÂ§7 is now Â§bfixedÂ§rÂ§7!" + "\nÂ§9*----------------------------------------------------------------*");
 	}
 
 	// This method will handle all the plugin messages received by BungeeCord
@@ -122,7 +136,7 @@ public class Fix extends JavaPlugin implements Listener, PluginMessageListener
 			// Broadcast message of BungeeCord detected
 			if (isOnline == 2)
 			{
-				Bukkit.getConsoleSender().sendMessage("§aBungeeCord has been §ndetected§r§a! The mode has been set to: §f" + data);
+				Bukkit.getConsoleSender().sendMessage("Â§aBungeeCord has been Â§ndetectedÂ§rÂ§a! The mode has been set to: Â§f" + data);
 			}
 
 			// Set the mode true or false according to BungeeCord
@@ -176,35 +190,19 @@ public class Fix extends JavaPlugin implements Listener, PluginMessageListener
 			// Calling the Fetcher
 			Fetcher fetcher = new Fetcher();
 
-			// Check if the fetchet UUID equals to the inputted UUID, inserting the online-mode.
-			if (!fetcher.fetchUUID(player.getName(), onlineMode()).equals(uuid))
+			// Check if the fetched UUID equals to the inputted UUID, inserting the online-mode.
+			if (config.getBoolean("fast-login"))
 			{
-				// Kick player for spoofed UUID
-				event.disallow(PlayerLoginEvent.Result.KICK_BANNED, messages().getString("kick-message").replaceAll("&", "§"));
-
-				// Check if the the debug is enabled in config
-				if (debug())
+				if (!fetcher.fastLoginFetcher(player.getName(), uuid))
 				{
-					// Declaring a new TextComponent with the player name
-					TextComponent name = new TextComponent(player.getName());
-
-					// Set the hover of the declared TextComponent with IP Address, Spoofed UUID etc.
-					name.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(messages().getString("ip-address").replaceAll("&", "§") + event.getRealAddress().getHostName() + "\n" + messages().getString("spoofed-uuid").replaceAll("&", "§") + uuid + "\n" + messages().getString("real-uuid").replaceAll("&", "§") + fetcher.fetchUUID(player.getName(), onlineMode()) + "\n" + messages().getString("date").replaceAll("&", "§") + currentDate()).create()));
-
-					// Check if the "debug-message" string contains name variable
-					if (messages().getString("debug-message").contains("%name%"))
-					{
-						// Split the string on the name variable
-						String[] nameSplit = messages().getString("debug-message").split("%name%");
-
-						// Broadcast a message to the server.
-						Bukkit.getServer().spigot().broadcast(new BaseComponent[] { new TextComponent(nameSplit[0].replaceAll("&", "§")), name, new TextComponent(nameSplit[1].replaceAll("&", "§")) });
-					}
-					else
-					{
-						// Broadcast a message to the server.
-						Bukkit.getServer().spigot().broadcast(new BaseComponent[] { new TextComponent(messages().getString("debug-message").replaceAll("&", "§")) });
-					}
+					kickSpoofed(player, event, uuid);
+				}
+			}
+			else
+			{
+				if (!fetcher.fetchUUID(player.getName(), onlineMode()).equals(uuid))
+				{
+					kickSpoofed(player, event, uuid);
 				}
 			}
 		}
@@ -220,13 +218,13 @@ public class Fix extends JavaPlugin implements Listener, PluginMessageListener
 		if (joinMsg())
 		{
 			// Text Components etc.
-			String successString = messages().getString("uuidcheck-success").replaceAll("&", "§");
+			String successString = messages().getString("uuidcheck-success").replaceAll("&", "Â§");
 			TextComponent success = new TextComponent("\n\n" + successString.replaceAll("%uuid%", player.getUniqueId().toString()));
-			TextComponent a = new TextComponent("§7UUIDSpoof - Fix");
-			a.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("§6Click here to go to\n§6the §7SpigotMC§6 Page of the plugin.").create()));
+			TextComponent a = new TextComponent("Â§7UUIDSpoof - Fix");
+			a.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Â§6Click here to go to\nÂ§6the Â§7SpigotMCÂ§6 Page of the plugin.").create()));
 			a.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://www.spigotmc.org/resources/uuidspoof-fix.26948/"));
-			TextComponent b = new TextComponent(" §fby ");
-			TextComponent c = new TextComponent("§b§ozPirroZ3007");
+			TextComponent b = new TextComponent(" Â§fby ");
+			TextComponent c = new TextComponent("Â§bÂ§ozPirroZ3007");
 			c.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://github.com/zPirroZ3007/"));
 
 			// Send the join-message to the player
@@ -243,18 +241,18 @@ public class Fix extends JavaPlugin implements Listener, PluginMessageListener
 			// Check if the sender of the command is a Player, and send him a message, else send a message to the console.
 			if (sender instanceof Player)
 			{
-				TextComponent a = new TextComponent("§7UUIDSpoof - Fix");
-				a.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("§6Click here to go to\n§6the §7SpigotMC§6 Page of the plugin.").create()));
+				TextComponent a = new TextComponent("Â§7UUIDSpoof - Fix");
+				a.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Â§6Click here to go to\nÂ§6the Â§7SpigotMCÂ§6 Page of the plugin.").create()));
 				a.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://www.spigotmc.org/resources/uuidspoof-fix.26948/"));
-				TextComponent b = new TextComponent(" §fby ");
-				TextComponent c = new TextComponent("§b§ozPirroZ3007");
+				TextComponent b = new TextComponent(" Â§fby ");
+				TextComponent c = new TextComponent("Â§bÂ§ozPirroZ3007");
 				c.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://www.spigotmc.org/members/zpirroz3007.44244/"));
 				((Player) sender).spigot().sendMessage(new BaseComponent[] { a, b, c });
-				sender.sendMessage("§fWith this plugin you can fix the UUID-Spoof exploit!");
+				sender.sendMessage("Â§fWith this plugin you can fix the UUID-Spoof exploit!");
 			}
 			else
 			{
-				Bukkit.getConsoleSender().sendMessage("\n§7UUIDSpoof - Fix §fby §b§ozPirroZ3007\n§fWith this plugin you can fix the UUID-Spoof exploit!");
+				Bukkit.getConsoleSender().sendMessage("\nÂ§7UUIDSpoof - Fix Â§fby Â§bÂ§ozPirroZ3007\nÂ§fWith this plugin you can fix the UUID-Spoof exploit!");
 			}
 
 			return true;
@@ -297,5 +295,39 @@ public class Fix extends JavaPlugin implements Listener, PluginMessageListener
 	private YamlConfiguration messages()
 	{
 		return YamlConfiguration.loadConfiguration(messages);
+	}
+
+	// This method will kick a player for UUID Spoofing.
+	private void kickSpoofed(Player player, PlayerLoginEvent event, String uuid)
+	{
+		// Kick player for spoofed UUID
+		event.disallow(PlayerLoginEvent.Result.KICK_BANNED, messages().getString("kick-message").replaceAll("&", "Â§"));
+
+		// Check if the the debug is enabled in config
+		if (debug())
+		{
+			Fetcher fetcher = new Fetcher();
+
+			// Declaring a new TextComponent with the player name
+			TextComponent name = new TextComponent(player.getName());
+
+			// Set the hover of the declared TextComponent with IP Address, Spoofed UUID etc.
+			name.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(messages().getString("ip-address").replaceAll("&", "Â§") + event.getRealAddress().getHostName() + "\n" + messages().getString("spoofed-uuid").replaceAll("&", "Â§") + uuid + "\n" + messages().getString("real-uuid").replaceAll("&", "Â§") + fetcher.fetchUUID(player.getName(), onlineMode()) + "\n" + messages().getString("date").replaceAll("&", "Â§") + currentDate()).create()));
+
+			// Check if the "debug-message" string contains name variable
+			if (messages().getString("debug-message").contains("%name%"))
+			{
+				// Split the string on the name variable
+				String[] nameSplit = messages().getString("debug-message").split("%name%");
+
+				// Broadcast a message to the server.
+				Bukkit.getServer().spigot().broadcast(new BaseComponent[] { new TextComponent(nameSplit[0].replaceAll("&", "Â§")), name, new TextComponent(nameSplit[1].replaceAll("&", "Â§")) });
+			}
+			else
+			{
+				// Broadcast a message to the server.
+				Bukkit.getServer().spigot().broadcast(new BaseComponent[] { new TextComponent(messages().getString("debug-message").replaceAll("&", "Â§")) });
+			}
+		}
 	}
 }

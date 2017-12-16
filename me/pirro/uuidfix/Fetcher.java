@@ -29,9 +29,10 @@ public class Fetcher
 	public String fetchUUID(String username, Boolean onlinemode)
 	{
 		// Check if the server is online mode or not
-		if(onlinemode)
+		if (onlinemode)
 		{
-			try {
+			try
+			{
 				// Contact the mojang API to get the player UUID.
 				URL url = new URL("https://api.mojang.com/users/profiles/minecraft/" + username);
 				InputStream stream = url.openStream();
@@ -39,7 +40,8 @@ public class Fetcher
 				BufferedReader reader = new BufferedReader(inr);
 				String s;
 				StringBuilder sb = new StringBuilder();
-				while ((s = reader.readLine()) != null) {
+				while ((s = reader.readLine()) != null)
+				{
 					sb.append(s);
 				}
 				String result = sb.toString();
@@ -54,7 +56,7 @@ public class Fetcher
 
 				return uuid;
 			}
-			catch(Exception ex)
+			catch (Exception ex)
 			{
 			}
 		}
@@ -65,5 +67,17 @@ public class Fetcher
 		}
 
 		return null;
+	}
+
+	// Method that will support plugins like fast-login
+	public boolean fastLoginFetcher(String name, String uuid)
+	{
+		// Check the UUID in every mode.
+		if (fetchUUID(name, true).equals(uuid) || fetchUUID(name, false).equals(uuid))
+		{
+			return true;
+		}
+
+		return false;
 	}
 }
