@@ -1,0 +1,8 @@
+name: UUIDSpoof-Fix
+version: 4.0
+author: zPirroZ3007
+main: me.pirro.uuidspoofix.Main
+description: With this plugin you can fix the UUID-Spoof exploit!
+commands:
+  uuidspoofix:
+    description: Main command of UUIDSpoof - Fix

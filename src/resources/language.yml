@@ -1,0 +1,10 @@
+# Language file of UUID Spoof - Fix
+
+# Kick message
+kick-message: "&cError!\n&7&nSeems that your UUID is Spoofed! Maybe this is an error, please try to\nrestart your client or change version!"
+
+# Success message for UUID-check
+uuidcheck-success: "&aYou passed the UUID check with success!\n&7Your UUID: &f&o%uuid%"
+
+# Debug broadcast message
+debug-message: "%name% (%ip%) &ctried to spoof his UUID! &9(%uuid%/%fakeuuid%)"
