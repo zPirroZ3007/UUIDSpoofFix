@@ -9,6 +9,7 @@
 
 package me.pirro.uuidspoofix.listener;
 
+import me.pirro.uuidspoofix.Main;
 import me.pirro.uuidspoofix.chat.Messenger;
 import me.pirro.uuidspoofix.lang.Language;
 import org.bukkit.ChatColor;
@@ -21,6 +22,7 @@ public class Join implements Listener
 {
 	@EventHandler(priority = EventPriority.MONITOR) public void onPlayerJoin(PlayerJoinEvent event)
 	{
-		Messenger.sendMessage(event.getPlayer(), ChatColor.translateAlternateColorCodes('&', Language.joinmessage.replaceAll("%uuid%", event.getPlayer().getUniqueId().toString())));
+		if (Main.getInstance().getConfig().getBoolean("join-msg"))
+			Messenger.sendMessage(event.getPlayer(), ChatColor.translateAlternateColorCodes('&', Language.joinmessage.replaceAll("%uuid%", event.getPlayer().getUniqueId().toString())));
 	}
 }
