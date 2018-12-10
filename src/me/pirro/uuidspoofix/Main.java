@@ -9,6 +9,8 @@
 
 package me.pirro.uuidspoofix;
 
+import de.domedd.betternick.BetterNick;
+import de.domedd.betternick.api.betternickapi.BetterNickAPI;
 import me.pirro.uuidspoofix.chat.Messenger;
 import me.pirro.uuidspoofix.commands.UUIDSpoofFix;
 import me.pirro.uuidspoofix.config.ConfigManager;
@@ -16,12 +18,14 @@ import me.pirro.uuidspoofix.lang.Language;
 import me.pirro.uuidspoofix.scheduler.Check;
 import me.pirro.uuidspoofix.util.Util;
 import me.pirro.uuidspoofix.metrics.Metrics;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class Main extends JavaPlugin
 {
 	private static Main instance;
+	public static BetterNickAPI api;
 
 	@Override public void onEnable()
 	{
@@ -36,6 +40,9 @@ public class Main extends JavaPlugin
 		getCommand("uuidspoofix").setExecutor(new UUIDSpoofFix());
 		Metrics metrics = new Metrics(this);
 		Messenger.enableMessage();
+		if (Bukkit.getPluginManager().getPlugin("BetterNick") != null)
+			api = BetterNick.getApi();
+
 	}
 
 	@Override public void onDisable()

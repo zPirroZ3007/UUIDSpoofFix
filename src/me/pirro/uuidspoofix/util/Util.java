@@ -9,6 +9,7 @@
 
 package me.pirro.uuidspoofix.util;
 
+import de.domedd.betternick.api.betternickapi.BetterNickAPI;
 import me.pirro.uuidspoofix.Main;
 import me.pirro.uuidspoofix.config.ConfigManager;
 import me.pirro.uuidspoofix.listener.Join;
@@ -22,6 +23,16 @@ public class Util
 {
 	private static boolean mode;
 	public static boolean toCheckBungee;
+
+	public static boolean usingBetterNick()
+	{
+		return (Bukkit.getPluginManager().getPlugin("BetterNick") != null);
+	}
+
+	public static BetterNickAPI getBetterNick()
+	{
+		return Main.api;
+	}
 
 	public static boolean getMode()
 	{

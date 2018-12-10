@@ -35,12 +35,18 @@ public class Fetcher
 	public static UUID fetchOffline(Player player)
 	{
 		String username = player.getName();
+
+		if (Util.usingBetterNick())
+			username = Util.getBetterNick().getRealName(player);
 		return UUID.nameUUIDFromBytes(("OfflinePlayer:" + username).getBytes(Charsets.UTF_8));
 	}
 
 	public static String fetchOnline(Player player)
 	{
 		String username = player.getName();
+
+		if (Util.usingBetterNick())
+			username = Util.getBetterNick().getRealName(player);
 
 		if (uuidsOnline.containsKey(username))
 			return uuidsOnline.get(username);
